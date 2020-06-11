@@ -1,0 +1,18 @@
+---
+service:
+  rest:
+    port: :8080
+connection:
+  rdb:
+    type: PostgreSQL
+    username: artemis
+    password: artemis
+    host: 127.0.0.1:5432
+    database: artemis
+circuitbreaker:
+  registers:
+    HttpbinService:
+      timeout: 3750
+      requestvolumethreshold: 5
+      sleepwindow: 10000
+      retryable: false

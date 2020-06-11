@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: artemis
+spec:
+  ports:
+  - protocol: TCP
+    port: 8888
+    targetPort: 8888
+  selector:
+    name: artemis
+    component: app
+    tier : backend
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: artemis
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5
+  selector:
+    matchLabels:
+      name: artemis
+      component: app
+      tier: backend
+  template:
+    metadata:
+      labels:
+        name: artemis
+        component: app
+        tier: backend
+    spec:
+      containers:
+      - name: artemis
+        image: rancherlab.operator.com/artemis:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8081
+        env:
+        - name: CONNECTION_RDB_TYPE
+          value: PostgreSQL
+        - name: CONNECTION_RDB_USERNAME
+          value: postgres
+        - name: CONNECTION_RDB_PASSWORD
+          value: postgres
+        - name: CONNECTION_RDB_HOST
+          value: postgres:5432
+        - name: CONNECTION_RDB_DATABASE
+          value: artemis
+        # - name: CONNECTION_CACHE_TYPE
+        #   value: Redis
+        # - name: CONNECTION_CACHE_HOST
+        #   value: localhost:6379
+        resources:
+          requests:
+            memory: 64Mi
+            cpu: 100m
+          limits:
+            memory: 128Mi
+            cpu: 200m
+      imagePullSecrets:
+        - name: gitlab
